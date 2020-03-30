@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-demo
+  labels:
+    app: argocd-demo
+spec:
+  replicas: 5
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: argocd-demo
+  template:
+    metadata:
+      labels:
+        app: argocd-demo
+    spec:
+      containers:
+        - name: argocd-demo
+          image: "shariqrizvi/simple-frontend:v5"
+          ports:
+          - containerPort: 3000
+            protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: argocd-demo
+  labels:
+    app: argocd-demo
+spec:
+  ports:
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: argocd-demo
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: argocd-demo
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    ingress.kubernetes.io/app-root: "/"
+spec:
+  rules:
+    - http:
+        paths:
+        - path: /
+          backend:
+            serviceName: argocd-demo
+            servicePort: 80
